@@ -5,17 +5,17 @@
 // Wi-Fi
 // =====================================================
 
-const char* ssid = "AirXtream-Gr_FL";
-const char* password = "Wagonr@7207#3232";
+const char* ssid = "Wi-fi SSID";
+const char* password = "Wifi Password";
 
 // =====================================================
 // MQTT
 // =====================================================
 
-const char* mqtt_server = "192.168.1.30";
+const char* mqtt_server = "IP ADDRESS"; // IP ADDRESS of MQTT Broker
 const int mqtt_port = 1883;
 
-const char* mqtt_topic = "sensors/ultrasonic/distance";
+const char* mqtt_topic = "sensors/ultrasonic/distance"; // Topic
 
 // =====================================================
 // HC-SR04
