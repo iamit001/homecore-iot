@@ -66,15 +66,15 @@ The subscriber should receive:
 Network test
 ```
 ### Test MQTT from another device
-You should also verify that MQTT can be accessed through the Ubuntu server's LAN IP.
+You should also verify that MQTT can be accessed through the CLI Ubuntu server's LAN IP.
 
 Use:
 ```bash
-mosquitto_sub -h 192.168.1.30 -t sensors/test
+mosquitto_sub -h <MQTT BROKER IP> -t sensors/test
 ```
 Then publish a message from another device:
 ```bash
-mosquitto_pub -h 192.168.1.30 -t sensors/test -m "Network test"
+mosquitto_pub -h <MQTT BROKER IP> -t sensors/test -m "Network test"
 ```
 If the message is received, MQTT is accessible over the LAN.
 
