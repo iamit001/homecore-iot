@@ -8,20 +8,9 @@ This module will measure the distance between an ultrasonic sensor and the surfa
 
 The Ubuntu server will run Mosquitto, Telegraf, and InfluxDB to receive, process, and store the sensor data. The Grafana will be used to visualize the collected data through a real-time dashboard.
 
-                    Wi-Fi
-                       │
-┌──────────────┐       │       ┌─────────────────────────┐
-│   HC-SR04    │       │       │      Ubuntu Server      │
-│  Ultrasonic  │       │       │      192.168.1.30       │
-└──────┬───────┘       │       │                         │
-       │               │       │   Mosquitto :1883      │
-       ▼               │       │          ↓              │
-┌──────────────┐       └──────►│       Telegraf         │
-│   ESP8266    │    MQTT       │          ↓              │
-│   HW-625     │──────────────►│      InfluxDB :8086    │
-└──────────────┘               │          ↓              │
-                               │       Grafana           │
-                               └─────────────────────────┘
+![Setup](assests/MQTT.png)
+
+   
 
 This architecture is designed to be expandable. In future stages, we can add humidity sensors, water-flow sensors, light sensors, relays, pumps, lights, and other devices without changing the basic architecture.
 
