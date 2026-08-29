@@ -418,46 +418,9 @@ For example:
 ```bash
 42.4 cm
 ```
-The completed first stage of HomeCore-IoT can be summarized as:
+The completed the stage of HomeCore-IoT can be summarized as:
 
-                    ┌──────────────────┐
-                    │     HC-SR04      │
-                    │ Ultrasonic Sensor│
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │     ESP8266      │
-                    │   Sensor Node    │
-                    └────────┬─────────┘
-                             │
-                           Wi-Fi
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │    Mosquitto     │
-                    │   MQTT Broker    │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │     Telegraf     │
-                    │ Data Collector   │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │     InfluxDB     │
-                    │  Time-Series DB  │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │     Grafana      │
-                    │    Dashboard     │
-                    └──────────────────┘
-
-The first objective of HomeCore-IoT is therefore:
+The objective of HomeCore-IoT is therefore:
 
 Measure → Transmit → Collect → Store → Visualize
 
