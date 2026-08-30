@@ -28,8 +28,11 @@ The server will host:
 - Telegraf
 - InfluxDB
 - Grafana
+
 Make sure the Ubuntu server and ESP8266 are connected to the same local network.
-## Install Mosquitto
+
+## Install Mosquitto MQTT Broker
+
 Mosquitto will act as the MQTT broker.
 
 Install Mosquitto and the MQTT command-line clients:
@@ -49,14 +52,14 @@ You should see Mosquitto listening on MQTT port:
 1883
 ```
 ### Test MQTT
-Before connecting the ESP8266, test the MQTT broker locally.
+Before connecting the ESP8266, test the MQTT broker locally on ubuntu server.
 
 Open one terminal and subscribe to a test topic:
 
 ```bash
 mosquitto_sub -h localhost -t sensors/test
 ```
-Open another terminal and publish a message:
+Open another terminal of same ubuntu server and publish a message:
 
 ```bash
 mosquitto_pub -h localhost -t sensors/test -m "Network test"
@@ -65,49 +68,31 @@ The subscriber should receive:
 ```bash
 Network test
 ```
+
 ### Test MQTT from another device
 You should also verify that MQTT can be accessed through the CLI Ubuntu server's LAN IP.
 
-Use:
+Use this command on ubuntu server where MQTT is setup and leave it running:
 ```bash
-mosquitto_sub -h <MQTT BROKER IP> -t sensors/test
+mosquitto_sub -h localhost -t sensors/test
 ```
 Then publish a message from another device:
 ```bash
 mosquitto_pub -h <MQTT BROKER IP> -t sensors/test -m "Network test"
 ```
+You will see somethisng like this on MQTT broker:
+
+```bash
+Network test
+```
 If the message is received, MQTT is accessible over the LAN.
 
-### Test ESP8266 Wi-Fi
+### Configure the HC-SR04 and MQTT
 Before connecting the ultrasonic sensor or MQTT, verify that the ESP8266 can connect to your Wi-Fi network.
 
-Use a 2.4 GHz Wi-Fi network because the ESP8266 does not support 5 GHz Wi-Fi.
+Use a 2.4GHz Wi-Fi network because the ESP8266 does not support 5GHz Wi-Fi Bands.
 
 Open the Arduino Serial Monitor and set the baud rate to: 115200
-After uploading the Wi-Fi test program, verify that the ESP8266 connects successfully and prints its IP address.
-
-### Test MQTT from the ESP8266
-After confirming that Wi-Fi works, configure the ESP8266 to connect to the MQTT broker.
-
-The MQTT server is:
-```bash
-<YOUR IP>:1883
-```
-For the initial MQTT test, publish:
-```bash
-Hello from ESP8266!
-```
-to:
-```bash
-sensors/test
-```
-On the Ubuntu server, monitor the topic with:
-
-```bash
-mosquitto_sub -h localhost -t sensors/test
-```
-### Configure the HC-SR04 and MQTT
-Once Wi-Fi and MQTT have been tested independently, connect the HC-SR04 and upload the complete ESP8266 program.
 
 The program performs the following tasks:
 
@@ -121,28 +106,37 @@ The program performs the following tasks:
 - Repeats the process approximately every second.
   
 Use the following code:
-Follow the homecore-iot.ino
+
+Follow the [View homecore-iot.ino](homecore-iot.ino)
+
 Replace:
+
 ```bash
 YOUR_WIFI_SSID
 YOUR_WIFI_PASSWORD
 ```
+
 with your own Wi-Fi credentials.
+
 ### Verify the MQTT Sensor Data
 The ESP8266 publishes ultrasonic measurements to:
+
 ```bash
 sensors/ultrasonic/distance
 ```
 Example values may look like:
+
 ```bash
 42.37
 41.92
 41.55
 40.81
 ```
+
 These values represent the measured distance in centimeters.
 
 To monitor the values directly from Ubuntu, run:
+
 ```bash
 mosquitto_sub -h localhost -t sensors/ultrasonic/distance
 ```
@@ -208,11 +202,11 @@ http://YOUR_SERVER_IP:8086
 
 When you open InfluxDB for the first time, create your initial account and configure:
 
-- **Username**
-- **Password**
-- **Organization**
-- **Bucket**
-- **API Token**
+- **Username** // Desirable Username
+- **Password** // Desirable Password
+- **Organization** //Desirable Org name
+- **Bucket** // "Sensors" in my case, You can use any name make sure use that name on subscriber (mosquitto_sub) on MQTT Broker
+- **API Token** // You will get during InfuxDB setup
 
 Keep the API token secure. Do not upload the real token to GitHub.
 
@@ -241,22 +235,26 @@ Its job is to:
 - Receive sensor values.
 - Convert the MQTT data into a format suitable for InfluxDB.
 - Write the measurements into InfluxDB.
-Create a directory for the Telegraf configuration:
+  
+### Create a directory for the Telegraf configuration:
+
 ```bash
 mkdir -p ~/telegraf
 ```
-Create the configuration file:
+### Create the configuration file:
+
 ```bash
 ~/telegraf/telegraf.conf
 ```
-Use the following configuration:
+### Use the following configuration:
+
 ```bash
 [agent]
   interval = "1s"
   flush_interval = "1s"
 
 [[inputs.mqtt_consumer]]
-  servers = ["tcp://192.168.1.30:1883"]
+  servers = ["tcp://<MQTT BROKER IP>:1883"]
 
   topics = [
     "sensors/ultrasonic/distance"
@@ -268,7 +266,7 @@ Use the following configuration:
   data_type = "float"
 
 [[outputs.influxdb_v2]]
-  urls = ["http://192.168.1.30:8086"]
+  urls = ["http://<MQTT BROKER IP>:8086"]
 
   token = "YOUR_INFLUXDB_TOKEN"
   organization = "YOUR_ORGANIZATION"
@@ -284,13 +282,14 @@ YOUR_BUCKET
 
 with your actual InfluxDB configuration.
 
-The important MQTT topic must match the topic used by the ESP8266:
+**The important MQTT topic must match the topic used by the ESP8266:**
+
 ```bash
 sensors/ultrasonic/distance
 ```
 The flush_interval is set to:
 ```bash
-ls
+1 second or 1s
 ```
 ### Run Telegraf with Docker
 
@@ -302,19 +301,20 @@ docker run -d \
   -v ~/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro \
   telegraf
 ```
-Verify that the container is running:
+### Verify that the container is running:
+
 ```bash
 docker ps
 ```
-Then check the Telegraf logs:
+### Then check the Telegraf logs:
 ```bash
 docker logs telegraf
 ```
-Look for a successful MQTT connection similar to:
+### Look for a successful MQTT connection similar to:
 ```bash
 [inputs.mqtt_consumer] Connected [tcp://192.168.1.30:1883]
 ```
-This confirms that Telegraf can connect to Mosquitto.
+**This confirms that Telegraf can connect to Mosquitto.**
 
 ### Verify Data in InfluxDB
 Open the InfluxDB web interface:
@@ -373,52 +373,52 @@ The minimum interval of 1s allows Grafana to work with the approximately one-sec
 ### Create the Distance Time-Series Panel
 Create a new Grafana dashboard and add a Time series panel.
 
-Use the following Flux query:
+### Use the following Flux query:
 ```bash
 from(bucket: "YOUR_BUCKET")
   |> range(start: -5m)
   |> filter(fn: (r) => r._field == "value")
 ```
-Replace:
+### Replace:
 ```bash
 YOUR_BUCKET
 ```
 with the actual InfluxDB bucket name.
 
-Configure the panel to display the unit as:
+### Configure the panel to display the unit as:
 ```bash
 centimeters (cm)
 ```
-Set the dashboard time range to:
+### Set the dashboard time range to:
 ```bash
 Last 5 minutes
 ```
-Set the dashboard refresh interval to:
+### Set the dashboard refresh interval to:
 ```bash
-ls
+1s or 1 second
 ```
 The panel should now display the ultrasonic distance measurements over time.
 ### Create the Current Distance Panel
 Create another panel using the Stat visualization.
 
-Use:
+### Use:
 ```bash
 from(bucket: "YOUR_BUCKET")
   |> range(start: -1m)
   |> filter(fn: (r) => r._field == "value")
   |> last()
 ```
-Set the unit to:
+### Set the unit to:
 ```bash
 centimeters (cm)
 ```
-This panel will display the most recent ultrasonic measurement.
+### This panel will display the most recent ultrasonic measurement.
 
 For example:
 ```bash
 42.4 cm
 ```
-The completed the stage of HomeCore-IoT can be summarized as:
+### The completed the stage of HomeCore-IoT can be summarized as:
 
 The objective of HomeCore-IoT is therefore:
 
