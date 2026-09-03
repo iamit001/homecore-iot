@@ -8,7 +8,7 @@ This module will measure the distance between an ultrasonic sensor and the surfa
 
 The Ubuntu server will run Mosquitto, Telegraf, and InfluxDB to receive, process, and store the sensor data. The Grafana will be used to visualize the collected data through a real-time dashboard.
 
-![Setup](assests/MQTT.png)
+![Setup](assets/MQTT-LAN.png)
 
    
 
